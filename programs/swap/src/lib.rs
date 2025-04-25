@@ -6,7 +6,7 @@ use anchor_spl::{
 };
 
 //program_id
-declare_id!("EPwQBZMG7y7VbijnPfPk7qgqR78TvZucSFP14zygkrAS");
+declare_id!("B8QBgERecZqrdzyqrrp9tKk3ndofGj7BjpGg8qzdCuwg");
 
 #[program]
 pub mod swap {
@@ -1916,7 +1916,6 @@ impl InterchainOffer {
 /// Event emitted when a trade is created.
 #[event]
 pub struct CreateTradeEvent {
-    #[index]
     pub id: u64,
     pub maker: Pubkey,
     pub token_a_offered_amount: u64,
@@ -1927,7 +1926,6 @@ pub struct CreateTradeEvent {
 
 #[event]
 pub struct InterchainOriginSolCreateTradeEvent {
-    #[index]
     pub id: u64,
     pub seller_sol: Pubkey,
     pub seller_evm: [u8; 20],
@@ -1940,7 +1938,6 @@ pub struct InterchainOriginSolCreateTradeEvent {
 
 #[event]
 pub struct InterchainCreateTradeEvent {
-    #[index]
     pub id: u64,
     pub buyer: Pubkey,
     pub token_a_offered_amount: u64,
@@ -1953,7 +1950,6 @@ pub struct InterchainCreateTradeEvent {
 /// Event emitted when a trade is completed.
 #[event]
 pub struct InterchainSwapCompletedEvent {
-    #[index]
     pub id: u64,
     pub buyer: Pubkey,
     pub seller: Pubkey,
@@ -1964,7 +1960,6 @@ pub struct InterchainSwapCompletedEvent {
 
 #[event]
 pub struct SwapCompletedEvent {
-    #[index]
     pub id: u64,
     pub maker: Pubkey,
     pub taker: Pubkey,
