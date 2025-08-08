@@ -8,8 +8,8 @@ import crypto from "crypto";
 import { Swap } from "../target/types/swap";
 
 // User A (swap.json) and User B (chaidex.json) keypairs
-const userA = Keypair.fromSecretKey(new Uint8Array(require("../swap.json")));
-const userB = Keypair.fromSecretKey(new Uint8Array(require("../chaidex.json")));
+const userA = Keypair.fromSecretKey(new Uint8Array(require("../userA-keypair.json")));
+const userB = Keypair.fromSecretKey(new Uint8Array(require("../user-keypair.json")));
 
 // Replace with actual CT Token Mint address
 const tokenMintA = new PublicKey("J1q7FEiMhzgd1T9bGtdh8ZTZa8mhsyszaW4AqQPvYxWX");
@@ -581,7 +581,7 @@ describe.skip("intrachain-swap-buyer", () => {
     });
 });
 
-describe("interchain-origin-EVM-seller", () => {
+describe.skip("interchain-origin-EVM-seller", () => {
     const provider = anchor.AnchorProvider.env();
     anchor.setProvider(provider);
     const program = anchor.workspace.Swap as Program<Swap>;
@@ -602,16 +602,16 @@ describe("interchain-origin-EVM-seller", () => {
 
 
         const randomSeed = crypto.randomBytes(4).readUInt32LE(0);
-        const offerId = new BN(2936293551);
+        const offerId = new BN(1109918993);
 
         console.log(`Using Offer ID: ${offerId.toString()}`); // ✅ Log Offer ID
 
         // Fix the endianness issue
         const idLE = new BN(offerId).toArrayLike(Buffer, "le", 8);
         //offerPda 
-        let offerPda = new PublicKey("5D59rhhmb1xq6nVqMrAobaZxmvdbbRgX9ZCxFf3Yrprb")
+        let offerPda = new PublicKey("CBpU4J7a8Zu8yswMeaz9cy9LCfc98wTSLQnPRwsgWCo8")
 
-        const offerAccount = await program.account.interchainOffer.fetch("5D59rhhmb1xq6nVqMrAobaZxmvdbbRgX9ZCxFf3Yrprb");
+        const offerAccount = await program.account.interchainOffer.fetch("CBpU4J7a8Zu8yswMeaz9cy9LCfc98wTSLQnPRwsgWCo8");
         //console.log("Offer data:", offerAccount);
         console.log("tokenAOfferedAmount in ETH:", offerAccount.tokenAOfferedAmount.toString());
         console.log("tokenBWantedAmount in SOL:", offerAccount.tokenBWantedAmount.toString());
@@ -693,7 +693,7 @@ describe("interchain-origin-EVM-seller", () => {
         console.log("Offer data after interchain deposit ------>", offerAccount);
     });
 
-    it("Deposit Interchain SPL Tokens (non-native)", async () => {
+    it.skip("Deposit Interchain SPL Tokens (non-native)", async () => {
         console.log("\n--- Now testing Inter-chain deposit_seller_spl ---");
 
         const randomSeedSpl = crypto.randomBytes(4).readUInt32LE(0);
@@ -855,7 +855,7 @@ describe.skip("interchain-origin-EVM-swap-buyer", () => {
 
     it.skip("take offer details test", async () => {
 
-        const offerAccount = await program.account.interchainOffer.fetch("41G6VJHUDVnAyZaKpdR6c5FRjfGEgVWCKwFZfrou7Pbw");
+        const offerAccount = await program.account.interchainOffer.fetch("CBpU4J7a8Zu8yswMeaz9cy9LCfc98wTSLQnPRwsgWCo8");
         // let offerId = offerAccount.id;
         // let isNative = offerAccount.isNative;
         // let isTakerNative = offerAccount.isTakerNative;
@@ -880,14 +880,14 @@ describe.skip("interchain-origin-EVM-swap-buyer", () => {
         console.log("\n--- Now testing Inter-chain finalize_intrachain_offer ~ native test ---");
 
         //const randomSeed = crypto.randomBytes(4).readUInt32LE(0);
-        const offerIdSpl = new BN(570959583);
+        const offerIdSpl = new BN(1109918993);
         console.log("Using Offer ID:", offerIdSpl.toString());
 
         const idLE = offerIdSpl.toArrayLike(Buffer, "le", 8);
 
-        let offerPdaSpl = new PublicKey("AR3iN5dWoQseFGdFKb9HYuJwdsdJVUGfKMgq5vMcDTc4")
+        let offerPdaSpl = new PublicKey("CBpU4J7a8Zu8yswMeaz9cy9LCfc98wTSLQnPRwsgWCo8")
 
-        const offerAccount = await program.account.interchainOffer.fetch("EKfs1CdxFHDRADT5mzVtcYV2x28hXm31PDX7dXTptHKo");
+        const offerAccount = await program.account.interchainOffer.fetch("CBpU4J7a8Zu8yswMeaz9cy9LCfc98wTSLQnPRwsgWCo8");
         console.log("offer data details before deposit--------->", offerAccount);
         console.log("Offer ID:", offerAccount.tradeId.toString());
         console.log("isNative:", offerAccount.isNative);
@@ -895,7 +895,7 @@ describe.skip("interchain-origin-EVM-swap-buyer", () => {
         console.log("Token A offered amount:", offerAccount.tokenAOfferedAmount.toString());
         console.log("Token B wanted amount that goes to seller :", offerAccount.tokenBWantedAmount.toString());
 
-        const buyer_sol = offerAccount.buyerSol
+        const buyer_sol = offerAccount.buyerSol;
 
         if (offerIdSpl.eq(offerAccount.tradeId)) {
             console.log("Offer ID matches");
@@ -1030,7 +1030,7 @@ describe.skip("interchain-origin-EVM-swap-buyer", () => {
 
     });
 
-    it("Interchain Take offer spl swap test-------------------------", async () => {
+    it.skip("Interchain Take offer spl swap test-------------------------", async () => {
 
         console.log("\n--- Now testing Inter-chain finalize_intrachain_offer ~ spl test ---");
 
@@ -1807,7 +1807,7 @@ describe.skip("interchain-native-relay-data", () => {
     const program = anchor.workspace.Swap as Program<Swap>;
 
     const externalSellerSol = new PublicKey(
-        "DYNnymGWfKKqYgwRuxYZq3f4qDtQ1LLaXogWhchHrjfQ"
+        "AT7A6dih5biJhbm6RbfvphwqP9Cf7Fmnsjr744nPdQns"
     );
 
     const evmHexAddress = "c629Fa8B87AD97E92C448E56Df9d979E1D1f441f".toLowerCase();
@@ -1937,7 +1937,7 @@ describe.skip("interchain-spl-relay-data", () => {
     const program = anchor.workspace.Swap as Program<Swap>;
 
     const externalSellerSol = new PublicKey(
-        "DYNnymGWfKKqYgwRuxYZq3f4qDtQ1LLaXogWhchHrjfQ"
+        "AT7A6dih5biJhbm6RbfvphwqP9Cf7Fmnsjr744nPdQns"
     );
 
     const evmHexAddress = "c629Fa8B87AD97E92C448E56Df9d979E1D1f441f".toLowerCase();

@@ -6,7 +6,7 @@ use anchor_spl::{
 };
 
 //program_id
-declare_id!("B8QBgERecZqrdzyqrrp9tKk3ndofGj7BjpGg8qzdCuwg");
+declare_id!("2aPHSuFmfq4twUdxtLnBZHh4f2T3JbAtaKcnhxSUKZfh");
 
 #[program]
 pub mod swap {
