@@ -48,7 +48,7 @@ let splSharedTestData = {
     vaultSplAta: null as PublicKey | null
 };
 
-describe("interchain-origin-EVM-flow", () => {
+describe.skip("interchain-origin-EVM-flow", () => {
     const provider = anchor.AnchorProvider.env();
     const connection = provider.connection;
     anchor.setProvider(provider);

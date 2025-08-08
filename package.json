@@ -25,7 +25,12 @@
   },
   "scripts": {
     "test": "anchor test",
+    "test:fast": "anchor test --skip-deploy --skip-build",
+    "test:interchain": "anchor test --skip-deploy --skip-build tests/interchain-origin-evm-flow.ts",
+    "test:intrachain": "anchor test --skip-deploy --skip-build tests/intrachain-flow.ts",
+    "test:swap": "anchor test --skip-deploy --skip-build tests/swap.ts",
     "test:ts": "npx ts-node tests/swap.ts",
+    "test:all-fast": "npm run test:interchain && npm run test:intrachain",
     "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
     "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check"
   },
