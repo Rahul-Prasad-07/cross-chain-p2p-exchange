@@ -1,16 +1,16 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { Swap } from "../target/types/swap";
-import { 
-    PublicKey, 
-    Keypair, 
+import {
+    PublicKey,
+    Keypair,
     SystemProgram,
-    LAMPORTS_PER_SOL 
+    LAMPORTS_PER_SOL
 } from "@solana/web3.js";
-import { 
-    TOKEN_PROGRAM_ID, 
-    ASSOCIATED_TOKEN_PROGRAM_ID, 
-    getAssociatedTokenAddressSync 
+import {
+    TOKEN_PROGRAM_ID,
+    ASSOCIATED_TOKEN_PROGRAM_ID,
+    getAssociatedTokenAddressSync
 } from "@solana/spl-token";
 import { BN } from "bn.js";
 import { assert } from "chai";
@@ -83,7 +83,7 @@ describe("intrachain-flow", () => {
 
             // Derive PDAs
             const idLE = nativeSharedTestData.offerId.toArrayLike(Buffer, "le", 8);
-            
+
             const [offerPda] = PublicKey.findProgramAddressSync(
                 [
                     Buffer.from("offer"),
@@ -389,7 +389,7 @@ describe("intrachain-flow", () => {
             // Verify the trade occurred correctly
             const solReceived = takerSolBalanceAfter - takerSolBalanceBefore;
             console.log("SOL received by taker:", solReceived);
-            
+
             // The taker should have received close to the offered amount (minus gas fees)
             assert.isTrue(solReceived > 0, "Taker should have received SOL");
 
@@ -514,7 +514,7 @@ describe("intrachain-flow", () => {
     describe("Flow Summary", () => {
         it("verify complete intrachain flow", async () => {
             console.log("\n=== INTRACHAIN FLOW SUMMARY ===");
-            
+
             if (nativeSharedTestData.offerAccount && splSharedTestData.offerAccount) {
                 console.log("✅ Native SOL Flow Summary:");
                 console.log("   Offer ID:", nativeSharedTestData.offerAccount.id.toString());
@@ -545,7 +545,7 @@ describe("intrachain-flow", () => {
         it("verify native and SPL flow completion", async () => {
             console.log("\n=== COMPREHENSIVE INTRACHAIN SUMMARY ===");
             console.log("🎯 All Intrachain Trading Flows:");
-            
+
             let nativeFlowComplete = false;
             let splFlowComplete = false;
 
