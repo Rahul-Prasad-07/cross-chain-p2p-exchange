@@ -701,7 +701,7 @@ Currently developing the **next-generation** Solana integration:
 ## 🤝 Community & Governance
 
 ### Discord: [ChaiDEX Community](https://discord.gg/chaidex)
-### Twitter: [@ChaiDEXProtocol](https://twitter.com/chaidexprotocol)
+### Twitter: [@ChaiDEXProtocol](https://x.com/chaidexhq)
 ### Telegram: [ChaiDEX Announcements](https://t.me/chaidex)
 
 ### Contribution Guidelines
@@ -726,20 +726,11 @@ Currently developing the **next-generation** Solana integration:
 
 | Resource | Link |
 |----------|------|
-| **GitHub Repository** | [chai-dex/sol-p2p-program](https://github.com/chai-dex/sol-p2p-program) |
+| **GitHub Repository** | [Solana Protocol](https://github.com/Rahul-Prasad-07/cross-chain-p2p-exchange) |
 | **Solana Explorer** | [Program: 2aPHSuFmfq4twUdxtLnBZHh4f2T3JbAtaKcnhxSUKZfh](https://explorer.solana.com/address/2aPHSuFmfq4twUdxtLnBZHh4f2T3JbAtaKcnhxSUKZfh) |
 | **Documentation** | [ChaiDEX Docs](https://docs.chaidex.com) |
 | **API Reference** | [ChaiDEX API](https://api.chaidex.com/docs) |
-| **Status Page** | [ChaiDEX Status](https://status.chaidex.com) |
-
----
-
-## 📞 Contact Information
-
-**Team Lead**: development@chaidex.com
-**Partnerships**: partnerships@chaidex.com  
-**Security**: security@chaidex.com
-**Press**: media@chaidex.com
+| **Status Page** | [ChaiDEX Status :Under Maintenance ](https://status.chaidex.com) |
 
 ---
 
