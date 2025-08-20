@@ -1,16 +1,22 @@
 import { Pool } from "pg";
 import { DATABASE_URL, LOG_LEVEL } from "./config.js";
 import { CursorRow, OfferEvent, OfferSnapshot } from "./types.js";
+import { logger } from "./logger.js";
 
 const pool = new Pool({ connectionString: DATABASE_URL });
 
-function log(level: string, ...args: any[]) {
-  if (["debug", "info", "warn", "error"].indexOf(LOG_LEVEL) === -1) return;
-  const order = { debug: 0, info: 1, warn: 2, error: 3 } as any;
-  if (order[level] >= order[LOG_LEVEL]) console.log(`[${level}]`, ...args);
+export async function ready() {
+  try {
+    await pool.query("select 1");
+    logger("info", LOG_LEVEL, "DB connected");
+  } catch (e) {
+    logger("error", LOG_LEVEL, "DB connection failed", e);
+    throw e;
+  }
 }
 
-export async function upsertTx(signature: string, slot: number, status: "confirmed" | "finalized", blockTime: number | null, programId: string) {
+/* Transaction upserts */
+export async function upsertTx(signature: string, slot: number, status: "confirmed" | "finalized" | "rolled_back", blockTime: number | null, programId: string) {
   const bt = blockTime ? new Date(blockTime * 1000).toISOString() : null;
   await pool.query(
     `insert into dex_txs (signature, slot, status, block_time, program_id)
@@ -25,13 +31,10 @@ export async function upsertTx(signature: string, slot: number, status: "confirm
 }
 
 export async function markRolledBack(signature: string) {
-  await pool.query(
-    `update dex_txs set status='rolled_back' where signature=$1`,
-    [signature]
-  );
-  log("info", `Marked rolled_back ${signature}`);
+  await pool.query(`update dex_txs set status='rolled_back' where signature=$1`, [signature]);
 }
 
+/* Offer snapshot upsert (same as before) */
 export async function upsertOfferSnapshot(s: OfferSnapshot) {
   await pool.query(
     `insert into offers (offer_pda, trade_id, maker, external_seller_sol, external_seller_evm,
@@ -59,6 +62,7 @@ export async function upsertOfferSnapshot(s: OfferSnapshot) {
   );
 }
 
+/* Event append */
 export async function appendEvent(ev: OfferEvent) {
   await pool.query(
     `insert into offer_events (offer_pda, signature, slot, kind, payload)
@@ -68,6 +72,7 @@ export async function appendEvent(ev: OfferEvent) {
   );
 }
 
+/* Cursor helpers */
 export async function getCursor(): Promise<CursorRow> {
   const r = await pool.query(`select name, last_finalized_slot, last_seen_signature from cursors where name='main'`);
   if (r.rowCount === 0) throw new Error("Cursor not seeded");
@@ -75,23 +80,36 @@ export async function getCursor(): Promise<CursorRow> {
 }
 
 export async function setCursor(slot: number, sig: string | null) {
-  await pool.query(
-    `update cursors set last_finalized_slot=$1, last_seen_signature=$2 where name='main'`,
-    [slot, sig]
-  );
+  await pool.query(`update cursors set last_finalized_slot=$1, last_seen_signature=$2 where name='main'`, [slot, sig]);
 }
 
+/* Reconcile helpers */
 export async function findConfirmedNotFinalized(): Promise<{ signature: string }[]> {
   const r = await pool.query(`select signature from dex_txs where status='confirmed' order by slot desc limit 1000`);
   return r.rows;
 }
 
-export async function ready() {
-  try {
-    await pool.query("select 1");
-    log("info", "DB connected");
-  } catch (e) {
-    log("error", "DB connection failed", e);
-    throw e;
+/* New API query helpers */
+export async function listOffers(limit = 100, offset = 0) {
+  const r = await pool.query(`select * from offers order by last_slot desc limit $1 offset $2`, [limit, offset]);
+  return r.rows;
+}
+
+export async function getOffer(offerPda: string) {
+  const r = await pool.query(`select * from offers where offer_pda=$1`, [offerPda]);
+  return r.rows[0] ?? null;
+}
+
+export async function listEvents(offerPda?: string, limit = 100, offset = 0) {
+  if (offerPda) {
+    const r = await pool.query(`select * from offer_events where offer_pda=$1 order by slot desc limit $2 offset $3`, [offerPda, limit, offset]);
+    return r.rows;
   }
+  const r = await pool.query(`select * from offer_events order by slot desc limit $1 offset $2`, [limit, offset]);
+  return r.rows;
+}
+
+export async function listTxs(limit = 100, offset = 0) {
+  const r = await pool.query(`select * from dex_txs order by slot desc limit $1 offset $2`, [limit, offset]);
+  return r.rows;
 }

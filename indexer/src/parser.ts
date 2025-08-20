@@ -7,25 +7,22 @@ import { coder, idlIx } from "./coder.js";
 import { PROGRAM_ID } from "./config.js";
 import { OfferEvent, OfferSnapshot } from "./types.js";
 import BN from "bn.js";
+import { logger } from "./logger.js";
+import { LOG_LEVEL } from "./config.js";
 
-/** Resolve the flat account key array for compiled-instruction indexing */
+/** helper: resolve account keys (unchanged) */
 export function resolveAccountKeys(tx: VersionedTransactionResponse): PublicKey[] {
     const anyMsg: any = tx.transaction.message;
-
     if (Array.isArray(anyMsg.accountKeys)) {
-        // legacy format (array of PublicKey)
         return anyMsg.accountKeys as PublicKey[];
     }
-
-    const staticKeys: PublicKey[] = anyMsg.staticAccountKeys as PublicKey[] || [];
+    const staticKeys: PublicKey[] = anyMsg.staticAccountKeys as PublicKey[];
     const w: PublicKey[] = tx.meta?.loadedAddresses?.writable || [];
     const r: PublicKey[] = tx.meta?.loadedAddresses?.readonly || [];
     return [...staticKeys, ...w, ...r];
 }
 
-/** Safe buffer conversion across web3.js versions */
 function toBuffer(d: any): Buffer {
-    if (!d) return Buffer.from([]);
     if (Buffer.isBuffer(d)) return d as Buffer;
     if (d?.type === "Buffer" && Array.isArray(d?.data)) return Buffer.from(d.data);
     if (d instanceof Uint8Array) return Buffer.from(d);
@@ -39,83 +36,45 @@ function toBuffer(d: any): Buffer {
     return Buffer.from([]);
 }
 
-/** Helper: normalize compiled instruction shape to a common object */
-function normalizeCompiledIx(ix: any): CompiledInstruction & { accountIndexes?: number[] } {
-    const out: any = { ...ix };
-    if (Array.isArray(ix.accounts) && ix.accounts.length > 0) {
-        out.accountIndexes = ix.accounts.map((a: any) => (typeof a === "number" ? a : null)).filter((x: any) => x !== null);
-    } else if (Array.isArray(ix.accountKeyIndexes)) {
-        out.accountIndexes = ix.accountKeyIndexes;
-    } else {
-        out.accountIndexes = [];
-    }
-    return out;
-}
-
-/** Decode program-owned instructions in a transaction */
-export function decodeProgramInstructions(
-    tx: VersionedTransactionResponse
-): Array<{
-    name: string;
-    data: any;
-    ix: CompiledInstruction;
-    accounts: PublicKey[];
-}> {
+export function decodeProgramInstructions(tx: VersionedTransactionResponse) {
     const keys = resolveAccountKeys(tx);
     const msg: any = tx.transaction.message;
+    const outer: CompiledInstruction[] = msg.compiledInstructions ?? msg.instructions ?? [];
+    const inner: CompiledInstruction[] = (tx.meta?.innerInstructions || [])
+        .flatMap((inner2: any) => inner2.instructions || []);
+    const compiled: CompiledInstruction[] = [...outer, ...inner];
 
-    const outerRaw: any[] = msg.compiledInstructions ?? msg.instructions ?? [];
-    const outer: any[] = outerRaw.map(normalizeCompiledIx);
+    const decoded: Array<{ name: string; data: any; ix: CompiledInstruction; accounts: PublicKey[] }> = [];
 
-    const innerRaw: any[] = tx.meta?.innerInstructions ?? [];
-    const inner: any[] = innerRaw.flatMap((g: any) => (g.instructions || []).map(normalizeCompiledIx));
+    for (const ix of compiled) {
+        const programId = keys[ix.programIdIndex];
+        if (!programId || !programId.equals(PROGRAM_ID)) continue;
 
-    const compiled: any[] = [...outer, ...inner];
-
-    const decoded: Array<{
-        name: string;
-        data: any;
-        ix: CompiledInstruction;
-        accounts: PublicKey[];
-    }> = [];
-
-    for (const rawIx of compiled) {
-        const programIdIndex = rawIx.programIdIndex;
-        if (programIdIndex == null) continue;
-        const programId = keys[programIdIndex];
-        if (!programId) continue;
-        if (!programId.equals(PROGRAM_ID)) continue;
-
-        const dataBuf = toBuffer(rawIx.data);
+        const dataBuf = toBuffer(ix.data);
         let dec: any;
         try {
             dec = coder.instruction.decode(dataBuf);
-        } catch (e) {
+        } catch (err) {
+            logger("debug", LOG_LEVEL, "Failed to decode instruction bytes for program, raw data hex:", dataBuf.toString("hex"));
             continue;
         }
-        if (!dec) continue;
-
-        const accountIdxs: number[] = rawIx.accountIndexes ?? rawIx.accounts ?? [];
-        let accountPks: PublicKey[] = [];
-        if (Array.isArray(accountIdxs) && accountIdxs.length > 0 && typeof accountIdxs[0] === "number") {
-            accountPks = accountIdxs.map((i: number) => keys[i]).filter(Boolean);
-        } else if (Array.isArray(rawIx.accounts) && rawIx.accounts.length > 0 && rawIx.accounts[0]?.toBase58) {
-            accountPks = rawIx.accounts as PublicKey[];
-        } else {
-            accountPks = [];
+        if (!dec) {
+            logger("debug", LOG_LEVEL, "Decoded returned null for instruction", dataBuf.toString("hex"));
+            continue;
         }
 
-        if (!accountPks || accountPks.length === 0) {
-            console.warn(`Instruction decoded but no resolved accounts available: ${dec.name}`);
+        if (!ix.accounts || ix.accounts.length === 0) {
+            logger("warn", LOG_LEVEL, `Skipping instruction with no accounts: ${dec.name} data(hex)=${dataBuf.toString("hex")}`, ix);
+            continue;
         }
 
-        decoded.push({ name: dec.name, data: dec.data, ix: rawIx as CompiledInstruction, accounts: accountPks });
+        const accountPks = ix.accounts.map((i: number) => keys[i]);
+        decoded.push({ name: dec.name, data: dec.data, ix, accounts: accountPks });
     }
 
     return decoded;
 }
 
-/** Map accounts by IDL names for a given decoded instruction */
 export function mapAccountsByIdlName(ixName: string, accountPks: PublicKey[]) {
     const spec = idlIx(ixName);
     const out: Record<string, string> = {};
@@ -128,29 +87,26 @@ export function mapAccountsByIdlName(ixName: string, accountPks: PublicKey[]) {
     return out;
 }
 
-/** Find the offer PDA for any of our instructions */
-export function pickOfferPda(ixName: string, named: Record<string, string>): string | null {
+function bnStr(x: any) {
+    if (x == null) return undefined;
+    if (BN.isBN(x)) return (x as BN).toString();
+    if (typeof x === "number") return String(x);
+    if (typeof x === "bigint") return x.toString();
+    return String(x);
+}
+
+function bufToHex(b?: Buffer | Uint8Array | null) {
+    if (!b) return null;
+    return Buffer.from(b).toString("hex");
+}
+
+export function pickOfferPda(ixName: string, named: Record<string, string>) {
     return named["interchainOffer"] || named["offer"] || null;
 }
 
-/** Build semantic OfferEvent + minimal snapshot mutation */
-export function buildEventAndSnapshot(
-    ixName: string,
-    args: any,
-    named: Record<string, string>,
-    signature: string,
-    slot: number
-): { event: OfferEvent | null; snapshot: OfferSnapshot | null } {
+export function buildEventAndSnapshot(ixName: string, args: any, named: Record<string, string>, signature: string, slot: number) {
     const offerPda = pickOfferPda(ixName, named);
     if (!offerPda) return { event: null, snapshot: null };
-
-    const bnStr = (x: any) => {
-        if (x == null) return undefined;
-        if (BN.isBN(x)) return (x as BN).toString();
-        if (typeof x === "number") return String(x);
-        if (typeof x === "bigint") return x.toString();
-        return String(x);
-    };
 
     const tradeId = bnStr(args.tradeId);
     const externalSellerSol = named["externalSellerSol"];
@@ -191,10 +147,7 @@ export function buildEventAndSnapshot(
         }
     };
 
-    const snapshot: OfferSnapshot = {
-        offerPda,
-        lastSlot: slot
-    };
+    const snapshot: OfferSnapshot = { offerPda, lastSlot: slot };
 
     if (kind === "created") {
         Object.assign(snapshot, {
@@ -209,12 +162,18 @@ export function buildEventAndSnapshot(
             buyerSol: null,
             isSwapCompleted: false
         });
+
+        // Log a friendly created line
+        logger("info", LOG_LEVEL, `CREATED: trade=${tradeId} offer=${offerPda} maker=${maker} externalSol=${externalSellerSol} externalEvm=${bufToHex(externalSellerEvm)} tokenA=${tokenAOfferedAmount} tokenB=${tokenBWantedAmount} takerNative=${isTakerNative}`);
     } else if (kind === "deposit_native" || kind === "deposit_spl") {
         if (buyerSol) snapshot.buyerSol = buyerSol;
         if (tokenAOfferedAmount) snapshot.tokenAOffered = tokenAOfferedAmount;
         if (tokenBWantedAmount) snapshot.tokenBWanted = tokenBWantedAmount;
+
+        logger("info", LOG_LEVEL, `DEPOSIT: offer=${offerPda} buyer=${buyerSol ?? named['buyer'] ?? 'unknown'} tokenA=${tokenAOfferedAmount ?? 'n/a'} tokenB=${tokenBWantedAmount ?? 'n/a'}`);
     } else if (kind === "finalized") {
         snapshot.isSwapCompleted = true;
+        logger("info", LOG_LEVEL, `FINALIZED: offer=${offerPda} trade=${tradeId} slot=${slot}`);
     }
 
     return { event, snapshot };
