@@ -25,6 +25,11 @@ The ChaiDEX Intrachain Flow enables **peer-to-peer trading within the Solana eco
 🚀 READY FOR PRODUCTION: All intrachain flows operational!
 ```
 
+## Address
+
+- seller : user keypair --> AT7A6dih5biJhbm6RbfvphwqP9Cf7Fmnsjr744nPdQns
+- buyer : userA keypair --> G3gVWRuyGYrDmeF54Du2MXTb5GfmXTsst7avZVPo1qHp
+
 ---
 
 ## 🏗️ Architecture

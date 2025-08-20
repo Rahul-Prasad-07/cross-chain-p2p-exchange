@@ -48,7 +48,7 @@ let splSharedTestData = {
     vaultSplAta: null as PublicKey | null
 };
 
-describe.skip("interchain-origin-EVM-flow", () => {
+describe("interchain-origin-EVM-flow", () => {
     const provider = anchor.AnchorProvider.env();
     const connection = provider.connection;
     anchor.setProvider(provider);
@@ -143,7 +143,7 @@ describe.skip("interchain-origin-EVM-flow", () => {
             console.log("✅ Step 1 completed: Offer successfully relayed to Solana");
         });
 
-        it("relayer calls relay_offer_clone for SPL tokens", async () => {
+        it.skip("relayer calls relay_offer_clone for SPL tokens", async () => {
             console.log("\n=== STEP 1: RELAY OFFER CLONE (SPL) ===");
             console.log("🌐 Scenario: EVM Seller wants to trade 0.17 ETH for 15 CT tokens");
             console.log("👤 EVM Seller: 0xc629fa8b87ad97e92c448e56df9d979e1d1f441f");
@@ -316,7 +316,7 @@ describe.skip("interchain-origin-EVM-flow", () => {
             console.log("✅ Step 2 completed: Native SOL deposited successfully");
         });
 
-        it("deposit SPL tokens for the relayed offer", async () => {
+        it.skip("deposit SPL tokens for the relayed offer", async () => {
             console.log("\n=== STEP 2: DEPOSIT SPL TOKENS ===");
             console.log("💰 Scenario: User A (buyer) wants to take the SPL offer");
             console.log("👤 User A (Buyer): G3gVWRuyGYrDmeF54Du2MXTb5GfmXTsst7avZVPo1qHp");
@@ -528,7 +528,7 @@ describe.skip("interchain-origin-EVM-flow", () => {
             console.log("📝 Note: Offer account was closed as part of the finalization process");
         });
 
-        it("finalize SPL token swap", async () => {
+        it.skip("finalize SPL token swap", async () => {
             console.log("\n=== STEP 3: FINALIZE SPL TOKEN SWAP ===");
             console.log("✅ Scenario: External seller claims SPL tokens and completes trade");
             console.log("👤 User B (External Seller): AT7A6dih5biJhbm6RbfvphwqP9Cf7Fmnsjr744nPdQns");

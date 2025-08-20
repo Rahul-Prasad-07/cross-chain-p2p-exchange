@@ -1,0 +1,28 @@
+{
+  "name": "dex-indexer",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "Rahul Prasad",
+  "type": "module",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "start": "node --enable-source-maps dist/index.js",
+    "dev": "tsx src/index.ts",
+    "build": "tsc -p .",
+    "migrate": "docker-compose exec -T db psql -U postgres -d dex_indexer -f /sql/0001_init.sql"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.30.1",
+    "@solana/web3.js": "^1.95.3",
+    "bn.js": "^5.2.1",
+    "dotenv": "^16.4.5",
+    "pg": "^8.12.0"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.15.5",
+    "tsx": "^4.16.2",
+    "typescript": "^5.5.4"
+  }
+}
