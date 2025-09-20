@@ -1,4 +1,4 @@
-# ChaiDEX Protocol: Cross-Chain P2P Trading Infrastructure --> Next : Confidential cross-chain exchange
+# CFC Protocol: Cross-Chain P2P Trading Infrastructure --> Next : Confidential cross-chain exchange
 
 ![ChaiDEX Logo](https://img.shields.io/badge/ChaiDEX-v1.0-blue?style=for-the-badge&logo=solana&logoColor=white)
 ![Solana](https://img.shields.io/badge/Solana-Program-9945FF?style=for-the-badge&logo=solana&logoColor=white)
@@ -8,7 +8,7 @@
 
 ## 🌟 Executive Summary
 
-ChaiDEX is a revolutionary cross-chain and intrachain decentralized exchange protocol that enables seamless peer-to-peer trading between Ethereum and Solana ecosystems, as well as native Solana-to-Solana trading. Built with cutting-edge blockchain technology, ChaiDEX facilitates atomic swaps across chains and direct P2P trades within Solana, ensuring trustless, secure, and efficient transactions without intermediaries.
+CFC is a revolutionary cross-chain and intrachain decentralized exchange protocol that enables seamless peer-to-peer trading between Ethereum and Solana ecosystems, as well as native Solana-to-Solana trading. Built with cutting-edge blockchain technology, ChaiDEX facilitates atomic swaps across chains and direct P2P trades within Solana, ensuring trustless, secure, and efficient transactions without intermediaries.
 
 ### 🏆 Key Achievements
 - ✅ **100% Test Coverage** - All 14 core test cases passing (8 interchain + 6 intrachain)
@@ -698,12 +698,6 @@ Currently developing the **next-generation** Solana integration:
 
 ---
 
-## 🤝 Community & Governance
-
-### Discord: [ChaiDEX Community](https://discord.gg/chaidex)
-### Twitter: [@ChaiDEXProtocol](https://x.com/chaidexhq)
-### Telegram: [ChaiDEX Announcements](https://t.me/chaidex)
-
 ### Contribution Guidelines
 1. Fork the repository
 2. Create feature branch
@@ -734,7 +728,7 @@ Currently developing the **next-generation** Solana integration:
 
 ---
 
-*ChaiDEX Protocol - Bridging the Future of Cross-Chain Finance*
+*CFC Protocol - Bridging the Future of Cross-Chain Finance*
 
 ![Footer](https://img.shields.io/badge/Built%20with-❤️%20and%20☕-red?style=for-the-badge)
 
