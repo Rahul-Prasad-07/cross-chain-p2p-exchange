@@ -1,4 +1,4 @@
-# ChaiDEX Protocol: Cross-Chain P2P Trading Infrastructure
+# ChaiDEX Protocol: Cross-Chain P2P Trading Infrastructure --> Next : Confidential cross-chain exchange
 
 ![ChaiDEX Logo](https://img.shields.io/badge/ChaiDEX-v1.0-blue?style=for-the-badge&logo=solana&logoColor=white)
 ![Solana](https://img.shields.io/badge/Solana-Program-9945FF?style=for-the-badge&logo=solana&logoColor=white)
